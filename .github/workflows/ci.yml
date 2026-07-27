@@ -18,7 +18,8 @@ jobs:
       run-clippy: false
       run-fmt: true
       run-test: true
-      extra-rust-targets: wasm32-unknown-unknown,aarch64-linux-android
       extra-checks: |
-        --target aarch64-linux-android --features bevy/android-native-activity
+        --target wasm32-unknown-unknown --no-default-features
         --features physics
+      include-android: true
+      android-features: bevy/android-native-activity
