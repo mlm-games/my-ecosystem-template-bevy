@@ -108,9 +108,16 @@ impl Plugin for AppPlugin {
                 DevToolsPlugin,
             ))
             .add_systems(Startup, setup_camera)
-            .add_systems(Update, sync_shared_ui)
-            .add_systems(Update, process_ui_actions)
-            .add_systems(Update, handle_pause_input);
+            .add_systems(
+                Update,
+                (
+                    sync_shared_ui,
+                    process_ui_actions,
+                    handle_pause_input,
+                    sync_virtual_time_with_pause,
+                )
+                    .chain(),
+            );
     }
 }
 
@@ -150,15 +157,32 @@ fn sync_shared_ui(
     ui.flash_alpha = flash.amount;
 }
 
+fn pop_overlay(overlay: &mut OverlayMenu, paused: bool) {
+    match *overlay {
+        OverlayMenu::Settings | OverlayMenu::Credits if paused => {
+            *overlay = OverlayMenu::Pause;
+        }
+        OverlayMenu::Pause => {
+            *overlay = OverlayMenu::None;
+        }
+        _ => {
+            *overlay = OverlayMenu::None;
+        }
+    }
+}
+
+fn set_unpaused(paused: &mut Paused, overlay: &mut OverlayMenu) {
+    paused.0 = false;
+    *overlay = OverlayMenu::None;
+}
+
 fn process_ui_actions(
     bridge: Res<UiBridge>,
-    _next_state: ResMut<NextState<AppState>>,
     mut paused: ResMut<Paused>,
     mut overlay: ResMut<OverlayMenu>,
     mut save: ResMut<crate::ecosystem::save::SaveData>,
     mut exit: MessageWriter<AppExit>,
     mut transition: ResMut<crate::ecosystem::transitions::Transition>,
-    _time: Res<Time<Virtual>>,
 ) {
     let Ok(mut q) = bridge.actions.lock() else {
         return;
@@ -171,18 +195,17 @@ fn process_ui_actions(
             UiAction::OpenSettings => *overlay = OverlayMenu::Settings,
             UiAction::OpenCredits => *overlay = OverlayMenu::Credits,
             UiAction::CloseOverlay => {
-                if *overlay == OverlayMenu::Pause {
+                let was_pause = *overlay == OverlayMenu::Pause;
+                pop_overlay(&mut overlay, paused.0);
+                if was_pause {
                     paused.0 = false;
                 }
-                *overlay = OverlayMenu::None;
             }
             UiAction::Resume => {
-                paused.0 = false;
-                *overlay = OverlayMenu::None;
+                set_unpaused(&mut paused, &mut overlay);
             }
             UiAction::QuitToTitle => {
-                paused.0 = false;
-                *overlay = OverlayMenu::None;
+                set_unpaused(&mut paused, &mut overlay);
                 transition.begin_to_state(AppState::Title);
             }
             UiAction::QuitApp => {
@@ -193,7 +216,7 @@ fn process_ui_actions(
             UiAction::SetMusicVol(v) => save.settings.music_volume = v.clamp(0.0, 1.0),
             UiAction::SaveSettings => {
                 let _ = crate::ecosystem::save::SaveManager::save(&save);
-                *overlay = OverlayMenu::None;
+                pop_overlay(&mut overlay, paused.0);
             }
         }
     }
@@ -204,31 +227,37 @@ fn handle_pause_input(
     state: Res<State<AppState>>,
     mut paused: ResMut<Paused>,
     mut overlay: ResMut<OverlayMenu>,
-    mut virtual_time: ResMut<Time<Virtual>>,
 ) {
     if *state.get() != AppState::InGame {
         return;
     }
-    if keys.just_pressed(KeyCode::Escape) {
-        match *overlay {
-            OverlayMenu::None if !paused.0 => {
-                paused.0 = true;
-                *overlay = OverlayMenu::Pause;
-                virtual_time.pause();
-            }
-            OverlayMenu::Pause => {
-                paused.0 = false;
-                *overlay = OverlayMenu::None;
-                virtual_time.unpause();
-            }
-            OverlayMenu::Settings | OverlayMenu::Credits => {
-                if paused.0 {
-                    *overlay = OverlayMenu::Pause;
-                } else {
-                    *overlay = OverlayMenu::None;
-                }
-            }
-            _ => {}
+    if !keys.just_pressed(KeyCode::Escape) {
+        return;
+    }
+    match *overlay {
+        OverlayMenu::None if !paused.0 => {
+            paused.0 = true;
+            *overlay = OverlayMenu::Pause;
         }
+        OverlayMenu::None if paused.0 => {
+            set_unpaused(&mut paused, &mut overlay);
+        }
+        OverlayMenu::Pause => {
+            set_unpaused(&mut paused, &mut overlay);
+        }
+        OverlayMenu::Settings | OverlayMenu::Credits => {
+            pop_overlay(&mut overlay, paused.0);
+        }
+        _ => {}
+    }
+}
+
+fn sync_virtual_time_with_pause(paused: Res<Paused>, mut virtual_time: ResMut<Time<Virtual>>) {
+    if paused.0 {
+        if !virtual_time.is_paused() {
+            virtual_time.pause();
+        }
+    } else if virtual_time.is_paused() {
+        virtual_time.unpause();
     }
 }
