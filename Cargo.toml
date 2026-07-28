@@ -66,6 +66,7 @@ repose-core = "0.25"
 repose-ui = "0.25"
 repose-render-wgpu = "0.25"
 rand = "0.10"
+wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
 ron = "0.12"
 directories = "6"
@@ -77,6 +78,8 @@ avian2d = { git = "https://github.com/avianphysics/avian", optional = true, defa
 
 [target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
 getrandom = { version = "0.4", features = ["wasm_js"] }
+console_error_panic_hook = "0.1"
+wasm-bindgen-futures = "0.4"
 getrandom_03 = { version = "0.3", features = [
     "wasm_js",
 ], package = "getrandom" }
