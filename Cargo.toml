@@ -9,6 +9,14 @@ readme = "README.md"
 keywords = ["bevy", "gamedev", "template", "2d", "repose"]
 categories = ["game-development"]
 rust-version = "1.96"
+default-run = "my-ecosystem-bevy-desktop"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "my-ecosystem-bevy-desktop"
+path = "src/main.rs"
 
 [features]
 default = ["dev_native"]
@@ -71,6 +79,12 @@ avian2d = { git = "https://github.com/avianphysics/avian", optional = true, defa
 getrandom = { version = "0.4", features = ["wasm_js"] }
 getrandom_03 = { version = "0.3", features = ["wasm_js"], package = "getrandom" }
 getrandom_02 = { version = "0.2", features = ["js"], package = "getrandom" }
+
+[package.metadata.android]
+features = ["bevy/android-native-activity"]
+
+[package.metadata.android.sdk]
+min_sdk_version = 26
 
 [lints.clippy]
 too_many_arguments = "allow"

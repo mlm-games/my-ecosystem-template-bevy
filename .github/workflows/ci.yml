@@ -22,4 +22,3 @@ jobs:
         --target wasm32-unknown-unknown --no-default-features
         --features physics
       include-android: true
-      android-features: bevy/android-native-activity

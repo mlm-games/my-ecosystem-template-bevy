@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use repose_core::View;
 use repose_core::prelude::{AlignItems, Color as RColor, JustifyContent, Modifier};
-use repose_ui::{Column, Row, Stack, Text as RText, TextStyle, ViewExt};
+use repose_ui::{Column, Row, Text as RText, TextStyle, ViewExt, ZStack};
 
 use crate::app::{AppState, OverlayMenu, SharedUi};
 
@@ -32,7 +32,7 @@ fn spacer(h: f32) -> View {
 }
 
 pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
-    let root = Stack(Modifier::new().fill_max_size());
+    let root = ZStack(Modifier::new().fill_max_size());
 
     let content = match st.phase {
         AppState::Splash => splash_ui(),
@@ -45,15 +45,12 @@ pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         AppState::InGame => {
             let hud = ingame_hud(&st);
             match st.overlay {
-                OverlayMenu::Pause => Stack(Modifier::new().fill_max_size())
-                    .child(hud)
-                    .child(pause_overlay(actions.clone())),
-                OverlayMenu::Settings => Stack(Modifier::new().fill_max_size())
-                    .child(hud)
-                    .child(settings_ui(&st, actions.clone())),
-                OverlayMenu::Credits => Stack(Modifier::new().fill_max_size())
-                    .child(hud)
-                    .child(credits_ui(actions.clone())),
+                OverlayMenu::Pause => ZStack(Modifier::new().fill_max_size())
+                    .child((hud, pause_overlay(actions.clone()))),
+                OverlayMenu::Settings => ZStack(Modifier::new().fill_max_size())
+                    .child((hud, settings_ui(&st, actions.clone()))),
+                OverlayMenu::Credits => ZStack(Modifier::new().fill_max_size())
+                    .child((hud, credits_ui(actions.clone()))),
                 OverlayMenu::None => hud,
             }
         }
@@ -62,17 +59,19 @@ pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     if st.transition_alpha > 0.001 || st.flash_alpha > 0.001 {
         let fade_a = (st.transition_alpha.clamp(0.0, 1.0) * 255.0) as u8;
         let flash_a = (st.flash_alpha.clamp(0.0, 1.0) * 255.0) as u8;
-        root.child(content)
-            .child(Column(
+        root.child((
+            content,
+            Column(
                 Modifier::new()
                     .fill_max_size()
                     .background(RColor::from_rgba(0, 0, 0, fade_a)),
-            ))
-            .child(Column(
+            ),
+            Column(
                 Modifier::new()
                     .fill_max_size()
-                    .background(RColor::from_rgba(255, 255, 255, flash_a)),
-            ))
+                    .background(RColor::from_rgba(flash_a, flash_a, flash_a, flash_a)),
+            ),
+        ))
     } else {
         root.child(content)
     }
