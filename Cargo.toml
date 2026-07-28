@@ -62,9 +62,9 @@ repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", default-featur
     "shared-device",
 ] }
 wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "0.24"
-repose-ui = "0.24"
-repose-render-wgpu = "0.24"
+repose-core = "0.25"
+repose-ui = "0.25"
+repose-render-wgpu = "0.25"
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
 ron = "0.12"
@@ -77,7 +77,9 @@ avian2d = { git = "https://github.com/avianphysics/avian", optional = true, defa
 
 [target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
 getrandom = { version = "0.4", features = ["wasm_js"] }
-getrandom_03 = { version = "0.3", features = ["wasm_js"], package = "getrandom" }
+getrandom_03 = { version = "0.3", features = [
+    "wasm_js",
+], package = "getrandom" }
 getrandom_02 = { version = "0.2", features = ["js"], package = "getrandom" }
 
 [package.metadata.android]
@@ -107,3 +109,8 @@ lto = "thin"
 inherits = "release"
 opt-level = "s"
 strip = "debuginfo"
+
+# [patch.crates-io]
+# repose-core = { path = "../../../Repos/repose/crates/repose-core" }
+# repose-ui = { path = "../../../Repos/repose/crates/repose-ui" }
+# repose-render-wgpu = { path = "../../../Repos/repose/crates/repose-render-wgpu" }
