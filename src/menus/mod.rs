@@ -1,7 +1,13 @@
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use repose_core::View;
-use repose_core::prelude::{AlignItems, Color as RColor, JustifyContent, Modifier};
+use repose_core::prelude::{
+    AlignItems, AnimationSpec, Color as RColor, Easing, JustifyContent, Modifier,
+};
+use repose_ui::anim_ext::{
+    AnimatedVisibility, AnimatedVisibilityConfig, EnterTransition, ExitTransition,
+};
 use repose_ui::{Column, Row, Text as RText, TextStyle, ViewExt, ZStack};
 
 use crate::app::{AppState, OverlayMenu, SharedUi};
@@ -31,28 +37,58 @@ fn spacer(h: f32) -> View {
     Column(Modifier::new().height(h).width(1.0))
 }
 
+fn popup_anim_config(key: &str) -> AnimatedVisibilityConfig {
+    AnimatedVisibilityConfig {
+        key: key.into(),
+        spec: AnimationSpec::tween(Duration::from_millis(220), Easing::SpringGentle),
+        enter: EnterTransition::ScaleIn { initial: 0.85 },
+        exit: ExitTransition::ScaleOut { target: 0.9 },
+    }
+}
+
 pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let root = ZStack(Modifier::new().fill_max_size());
 
     let content = match st.phase {
         AppState::Splash => splash_ui(),
         AppState::Loading => loading_ui(),
-        AppState::Title => match st.overlay {
-            OverlayMenu::Settings => settings_ui(&st, actions.clone()),
-            OverlayMenu::Credits => credits_ui(actions.clone()),
-            _ => title_ui(actions.clone()),
-        },
+        AppState::Title => {
+            ZStack(Modifier::new().fill_max_size())
+                .child((
+                    title_ui(actions.clone()),
+                    AnimatedVisibility(
+                        st.overlay == OverlayMenu::Settings,
+                        settings_ui(&st, actions.clone()),
+                        popup_anim_config("title_settings"),
+                    ),
+                    AnimatedVisibility(
+                        st.overlay == OverlayMenu::Credits,
+                        credits_ui(actions.clone()),
+                        popup_anim_config("title_credits"),
+                    ),
+                ))
+        }
         AppState::InGame => {
             let hud = ingame_hud(&st);
-            match st.overlay {
-                OverlayMenu::Pause => ZStack(Modifier::new().fill_max_size())
-                    .child((hud, pause_overlay(actions.clone()))),
-                OverlayMenu::Settings => ZStack(Modifier::new().fill_max_size())
-                    .child((hud, settings_ui(&st, actions.clone()))),
-                OverlayMenu::Credits => ZStack(Modifier::new().fill_max_size())
-                    .child((hud, credits_ui(actions.clone()))),
-                OverlayMenu::None => hud,
-            }
+            ZStack(Modifier::new().fill_max_size())
+                .child((
+                    hud,
+                    AnimatedVisibility(
+                        st.overlay == OverlayMenu::Pause,
+                        pause_overlay(actions.clone()),
+                        popup_anim_config("pause"),
+                    ),
+                    AnimatedVisibility(
+                        st.overlay == OverlayMenu::Settings,
+                        settings_ui(&st, actions.clone()),
+                        popup_anim_config("ingame_settings"),
+                    ),
+                    AnimatedVisibility(
+                        st.overlay == OverlayMenu::Credits,
+                        credits_ui(actions.clone()),
+                        popup_anim_config("ingame_credits"),
+                    ),
+                ))
         }
     };
 

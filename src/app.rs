@@ -34,6 +34,9 @@ pub enum OverlayMenu {
     Pause,
 }
 
+#[derive(Resource, Default)]
+pub struct PendingUnpause(pub Option<Timer>);
+
 #[derive(Resource, Clone)]
 pub struct SharedUi {
     pub phase: AppState,
@@ -77,6 +80,7 @@ impl Plugin for AppPlugin {
         app.init_state::<AppState>()
             .insert_resource(Paused(false))
             .insert_resource(OverlayMenu::None)
+            .insert_resource(PendingUnpause(None))
             .insert_resource(UiBridge {
                 shared: shared.clone(),
                 actions: actions.clone(),
@@ -114,6 +118,7 @@ impl Plugin for AppPlugin {
                     sync_shared_ui,
                     process_ui_actions,
                     handle_pause_input,
+                    tick_pending_unpause,
                     sync_virtual_time_with_pause,
                 )
                     .chain(),
@@ -157,23 +162,20 @@ fn sync_shared_ui(
     ui.flash_alpha = flash.amount;
 }
 
-fn pop_overlay(overlay: &mut OverlayMenu, paused: bool) {
-    match *overlay {
-        OverlayMenu::Settings | OverlayMenu::Credits if paused => {
-            *overlay = OverlayMenu::Pause;
-        }
-        OverlayMenu::Pause => {
-            *overlay = OverlayMenu::None;
-        }
-        _ => {
-            *overlay = OverlayMenu::None;
-        }
+fn tick_pending_unpause(
+    real: Res<Time<Real>>,
+    mut pending: ResMut<PendingUnpause>,
+    mut paused: ResMut<Paused>,
+    mut virtual_time: ResMut<Time<Virtual>>,
+) {
+    let Some(timer) = pending.0.as_mut() else {
+        return;
+    };
+    if timer.tick(real.delta()).just_finished() {
+        pending.0 = None;
+        paused.0 = false;
+        virtual_time.unpause();
     }
-}
-
-fn set_unpaused(paused: &mut Paused, overlay: &mut OverlayMenu) {
-    paused.0 = false;
-    *overlay = OverlayMenu::None;
 }
 
 fn process_ui_actions(
@@ -183,6 +185,8 @@ fn process_ui_actions(
     mut save: ResMut<crate::ecosystem::save::SaveData>,
     mut exit: MessageWriter<AppExit>,
     mut transition: ResMut<crate::ecosystem::transitions::Transition>,
+    mut virtual_time: ResMut<Time<Virtual>>,
+    mut pending_unpause: ResMut<PendingUnpause>,
 ) {
     let Ok(mut q) = bridge.actions.lock() else {
         return;
@@ -195,17 +199,29 @@ fn process_ui_actions(
             UiAction::OpenSettings => *overlay = OverlayMenu::Settings,
             UiAction::OpenCredits => *overlay = OverlayMenu::Credits,
             UiAction::CloseOverlay => {
-                let was_pause = *overlay == OverlayMenu::Pause;
-                pop_overlay(&mut overlay, paused.0);
-                if was_pause {
-                    paused.0 = false;
+                match *overlay {
+                    OverlayMenu::Settings | OverlayMenu::Credits if paused.0 => {
+                        *overlay = OverlayMenu::Pause;
+                    }
+                    OverlayMenu::Pause if paused.0 => {
+                        *overlay = OverlayMenu::None;
+                        pending_unpause.0 =
+                            Some(Timer::from_seconds(0.22, TimerMode::Once));
+                    }
+                    _ => {
+                        *overlay = OverlayMenu::None;
+                    }
                 }
             }
             UiAction::Resume => {
-                set_unpaused(&mut paused, &mut overlay);
+                *overlay = OverlayMenu::None;
+                pending_unpause.0 = Some(Timer::from_seconds(0.22, TimerMode::Once));
             }
             UiAction::QuitToTitle => {
-                set_unpaused(&mut paused, &mut overlay);
+                paused.0 = false;
+                *overlay = OverlayMenu::None;
+                pending_unpause.0 = None;
+                virtual_time.unpause();
                 transition.begin_to_state(AppState::Title);
             }
             UiAction::QuitApp => {
@@ -216,7 +232,11 @@ fn process_ui_actions(
             UiAction::SetMusicVol(v) => save.settings.music_volume = v.clamp(0.0, 1.0),
             UiAction::SaveSettings => {
                 let _ = crate::ecosystem::save::SaveManager::save(&save);
-                pop_overlay(&mut overlay, paused.0);
+                if paused.0 {
+                    *overlay = OverlayMenu::Pause;
+                } else {
+                    *overlay = OverlayMenu::None;
+                }
             }
         }
     }
@@ -227,6 +247,8 @@ fn handle_pause_input(
     state: Res<State<AppState>>,
     mut paused: ResMut<Paused>,
     mut overlay: ResMut<OverlayMenu>,
+    mut virtual_time: ResMut<Time<Virtual>>,
+    mut pending_unpause: ResMut<PendingUnpause>,
 ) {
     if *state.get() != AppState::InGame {
         return;
@@ -238,15 +260,19 @@ fn handle_pause_input(
         OverlayMenu::None if !paused.0 => {
             paused.0 = true;
             *overlay = OverlayMenu::Pause;
-        }
-        OverlayMenu::None if paused.0 => {
-            set_unpaused(&mut paused, &mut overlay);
+            virtual_time.pause();
+            pending_unpause.0 = None;
         }
         OverlayMenu::Pause => {
-            set_unpaused(&mut paused, &mut overlay);
+            *overlay = OverlayMenu::None;
+            pending_unpause.0 = Some(Timer::from_seconds(0.22, TimerMode::Once));
         }
         OverlayMenu::Settings | OverlayMenu::Credits => {
-            pop_overlay(&mut overlay, paused.0);
+            if paused.0 {
+                *overlay = OverlayMenu::Pause;
+            } else {
+                *overlay = OverlayMenu::None;
+            }
         }
         _ => {}
     }

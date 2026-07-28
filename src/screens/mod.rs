@@ -21,14 +21,14 @@ struct SplashTimer(Timer);
 #[derive(Resource)]
 struct LoadingTimer(Timer);
 
-fn tick_splash(time: Res<Time>, mut tr: ResMut<Transition>, timer: Option<ResMut<SplashTimer>>) {
+fn tick_splash(time: Res<Time<Real>>, mut tr: ResMut<Transition>, timer: Option<ResMut<SplashTimer>>) {
     let Some(mut timer) = timer else { return };
     if timer.0.tick(time.delta()).just_finished() {
         tr.begin_to_state(AppState::Loading);
     }
 }
 
-fn tick_loading(time: Res<Time>, mut tr: ResMut<Transition>, timer: Option<ResMut<LoadingTimer>>) {
+fn tick_loading(time: Res<Time<Real>>, mut tr: ResMut<Transition>, timer: Option<ResMut<LoadingTimer>>) {
     let Some(mut timer) = timer else { return };
     if timer.0.tick(time.delta()).just_finished() {
         tr.begin_to_state(AppState::Title);
