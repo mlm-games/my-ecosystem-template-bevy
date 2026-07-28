@@ -4,3 +4,4 @@ target/
 # Cargo.lock
 *.wasm
 assets_export/
+dist/

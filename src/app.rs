@@ -206,21 +206,18 @@ fn process_ui_actions(
             }
             UiAction::OpenSettings => *overlay = OverlayMenu::Settings,
             UiAction::OpenCredits => *overlay = OverlayMenu::Credits,
-            UiAction::CloseOverlay => {
-                match *overlay {
-                    OverlayMenu::Settings | OverlayMenu::Credits if paused.0 => {
-                        *overlay = OverlayMenu::Pause;
-                    }
-                    OverlayMenu::Pause if paused.0 => {
-                        *overlay = OverlayMenu::None;
-                        pending_unpause.0 =
-                            Some(Timer::from_seconds(0.2, TimerMode::Once));
-                    }
-                    _ => {
-                        *overlay = OverlayMenu::None;
-                    }
+            UiAction::CloseOverlay => match *overlay {
+                OverlayMenu::Settings | OverlayMenu::Credits if paused.0 => {
+                    *overlay = OverlayMenu::Pause;
                 }
-            }
+                OverlayMenu::Pause if paused.0 => {
+                    *overlay = OverlayMenu::None;
+                    pending_unpause.0 = Some(Timer::from_seconds(0.2, TimerMode::Once));
+                }
+                _ => {
+                    *overlay = OverlayMenu::None;
+                }
+            },
             UiAction::Resume => {
                 *overlay = OverlayMenu::None;
                 pending_unpause.0 = Some(Timer::from_seconds(0.2, TimerMode::Once));

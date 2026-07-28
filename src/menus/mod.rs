@@ -52,43 +52,39 @@ pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let content = match st.phase {
         AppState::Splash => splash_ui(),
         AppState::Loading => loading_ui(),
-        AppState::Title => {
-            ZStack(Modifier::new().fill_max_size())
-                .child((
-                    title_ui(actions.clone()),
-                    AnimatedVisibility(
-                        st.overlay == OverlayMenu::Settings,
-                        settings_ui(&st, actions.clone()),
-                        popup_anim_config("title_settings"),
-                    ),
-                    AnimatedVisibility(
-                        st.overlay == OverlayMenu::Credits,
-                        credits_ui(actions.clone()),
-                        popup_anim_config("title_credits"),
-                    ),
-                ))
-        }
+        AppState::Title => ZStack(Modifier::new().fill_max_size()).child((
+            title_ui(actions.clone()),
+            AnimatedVisibility(
+                st.overlay == OverlayMenu::Settings,
+                settings_ui(&st, actions.clone()),
+                popup_anim_config("title_settings"),
+            ),
+            AnimatedVisibility(
+                st.overlay == OverlayMenu::Credits,
+                credits_ui(actions.clone()),
+                popup_anim_config("title_credits"),
+            ),
+        )),
         AppState::InGame => {
             let hud = ingame_hud(&st);
-            ZStack(Modifier::new().fill_max_size())
-                .child((
-                    hud,
-                    AnimatedVisibility(
-                        st.overlay == OverlayMenu::Pause,
-                        pause_overlay(actions.clone()),
-                        popup_anim_config("pause"),
-                    ),
-                    AnimatedVisibility(
-                        st.overlay == OverlayMenu::Settings,
-                        settings_ui(&st, actions.clone()),
-                        popup_anim_config("ingame_settings"),
-                    ),
-                    AnimatedVisibility(
-                        st.overlay == OverlayMenu::Credits,
-                        credits_ui(actions.clone()),
-                        popup_anim_config("ingame_credits"),
-                    ),
-                ))
+            ZStack(Modifier::new().fill_max_size()).child((
+                hud,
+                AnimatedVisibility(
+                    st.overlay == OverlayMenu::Pause,
+                    pause_overlay(actions.clone()),
+                    popup_anim_config("pause"),
+                ),
+                AnimatedVisibility(
+                    st.overlay == OverlayMenu::Settings,
+                    settings_ui(&st, actions.clone()),
+                    popup_anim_config("ingame_settings"),
+                ),
+                AnimatedVisibility(
+                    st.overlay == OverlayMenu::Credits,
+                    credits_ui(actions.clone()),
+                    popup_anim_config("ingame_credits"),
+                ),
+            ))
         }
     };
 
