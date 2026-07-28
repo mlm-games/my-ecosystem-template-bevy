@@ -40,9 +40,9 @@ fn spacer(h: f32) -> View {
 fn popup_anim_config(key: &str) -> AnimatedVisibilityConfig {
     AnimatedVisibilityConfig {
         key: key.into(),
-        spec: AnimationSpec::tween(Duration::from_millis(220), Easing::SpringGentle),
-        enter: EnterTransition::ScaleIn { initial: 0.85 },
-        exit: ExitTransition::ScaleOut { target: 0.9 },
+        spec: AnimationSpec::tween(Duration::from_millis(200), Easing::EaseOut),
+        enter: EnterTransition::ScaleIn { initial: 0.95 },
+        exit: ExitTransition::ScaleOut { target: 0.95 },
     }
 }
 

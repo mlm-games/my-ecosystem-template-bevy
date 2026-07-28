@@ -206,7 +206,7 @@ fn process_ui_actions(
                     OverlayMenu::Pause if paused.0 => {
                         *overlay = OverlayMenu::None;
                         pending_unpause.0 =
-                            Some(Timer::from_seconds(0.22, TimerMode::Once));
+                            Some(Timer::from_seconds(0.2, TimerMode::Once));
                     }
                     _ => {
                         *overlay = OverlayMenu::None;
@@ -215,7 +215,7 @@ fn process_ui_actions(
             }
             UiAction::Resume => {
                 *overlay = OverlayMenu::None;
-                pending_unpause.0 = Some(Timer::from_seconds(0.22, TimerMode::Once));
+                pending_unpause.0 = Some(Timer::from_seconds(0.2, TimerMode::Once));
             }
             UiAction::QuitToTitle => {
                 paused.0 = false;
@@ -265,7 +265,7 @@ fn handle_pause_input(
         }
         OverlayMenu::Pause => {
             *overlay = OverlayMenu::None;
-            pending_unpause.0 = Some(Timer::from_seconds(0.22, TimerMode::Once));
+            pending_unpause.0 = Some(Timer::from_seconds(0.2, TimerMode::Once));
         }
         OverlayMenu::Settings | OverlayMenu::Credits => {
             if paused.0 {
