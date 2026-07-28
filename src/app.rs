@@ -155,9 +155,11 @@ fn sync_shared_ui(
     ui.overlay = *overlay;
     ui.high_score = save.high_score;
     ui.score = score.map(|s| s.0).unwrap_or(0);
-    ui.master_vol = save.settings.master_volume;
-    ui.sfx_vol = save.settings.sfx_volume;
-    ui.music_vol = save.settings.music_volume;
+    if *overlay != OverlayMenu::Settings {
+        ui.master_vol = save.settings.master_volume;
+        ui.sfx_vol = save.settings.sfx_volume;
+        ui.music_vol = save.settings.music_volume;
+    }
     ui.transition_alpha = transition.overlay_alpha;
     ui.flash_alpha = flash.amount;
 }
@@ -175,6 +177,12 @@ fn tick_pending_unpause(
         pending.0 = None;
         paused.0 = false;
         virtual_time.unpause();
+    }
+}
+
+fn set_vol(bridge: &UiBridge, field: impl Fn(&mut SharedUi) -> &mut f32, v: f32) {
+    if let Ok(mut ui) = bridge.shared.lock() {
+        *field(&mut ui) = v.clamp(0.0, 1.0);
     }
 }
 
@@ -227,10 +235,15 @@ fn process_ui_actions(
             UiAction::QuitApp => {
                 exit.write(AppExit::Success);
             }
-            UiAction::SetMasterVol(v) => save.settings.master_volume = v.clamp(0.0, 1.0),
-            UiAction::SetSfxVol(v) => save.settings.sfx_volume = v.clamp(0.0, 1.0),
-            UiAction::SetMusicVol(v) => save.settings.music_volume = v.clamp(0.0, 1.0),
+            UiAction::SetMasterVol(v) => set_vol(&bridge, |ui| &mut ui.master_vol, v),
+            UiAction::SetSfxVol(v) => set_vol(&bridge, |ui| &mut ui.sfx_vol, v),
+            UiAction::SetMusicVol(v) => set_vol(&bridge, |ui| &mut ui.music_vol, v),
             UiAction::SaveSettings => {
+                if let Ok(ui) = bridge.shared.lock() {
+                    save.settings.master_volume = ui.master_vol;
+                    save.settings.sfx_volume = ui.sfx_vol;
+                    save.settings.music_volume = ui.music_vol;
+                }
                 let _ = crate::ecosystem::save::SaveManager::save(&save);
                 if paused.0 {
                     *overlay = OverlayMenu::Pause;
