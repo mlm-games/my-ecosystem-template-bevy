@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use bevy::prelude::*;
-use repose_bevy::{ReposePlugin, ReposePluginSettings};
+use repose_bevy::{compose_repose_system, ReposePlugin, ReposePluginSettings};
 
 use crate::demo::DemoPlugin;
 use crate::dev_tools::DevToolsPlugin;
@@ -115,7 +115,7 @@ impl Plugin for AppPlugin {
             .add_systems(
                 Update,
                 (
-                    sync_shared_ui,
+                    sync_shared_ui.before(compose_repose_system),
                     process_ui_actions,
                     handle_pause_input,
                     tick_pending_unpause,
