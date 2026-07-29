@@ -5604,7 +5604,7 @@ dependencies = [
 [[package]]
 name = "repose-bevy"
 version = "0.2.0"
-source = "git+https://github.com/mlm-games/repose-bevy#773c1a8d06145c1634954c4db8895bc7ad8639e0"
+source = "git+https://github.com/mlm-games/repose-bevy#aa3c232409c98cfa98c16782a424134a6470d826"
 dependencies = [
  "anyhow",
  "bevy 0.20.0-dev",
