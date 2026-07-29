@@ -6,7 +6,7 @@ use crate::ecosystem::transitions::Transition;
 pub struct ScreensPlugin;
 impl Plugin for ScreensPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, |mut c: Commands| {
+        app.add_systems(OnEnter(AppState::Splash), |mut c: Commands| {
             c.insert_resource(SplashTimer(Timer::from_seconds(1.5, TimerMode::Once)));
         })
         .add_systems(OnEnter(AppState::Loading), |mut c: Commands| {
@@ -24,21 +24,25 @@ struct LoadingTimer(Timer);
 fn tick_splash(
     time: Res<Time<Real>>,
     mut tr: ResMut<Transition>,
+    mut commands: Commands,
     timer: Option<ResMut<SplashTimer>>,
 ) {
     let Some(mut timer) = timer else { return };
     if timer.0.tick(time.delta()).just_finished() {
         tr.begin_to_state(AppState::Loading);
+        commands.remove_resource::<SplashTimer>();
     }
 }
 
 fn tick_loading(
     time: Res<Time<Real>>,
     mut tr: ResMut<Transition>,
+    mut commands: Commands,
     timer: Option<ResMut<LoadingTimer>>,
 ) {
     let Some(mut timer) = timer else { return };
     if timer.0.tick(time.delta()).just_finished() {
         tr.begin_to_state(AppState::Title);
+        commands.remove_resource::<LoadingTimer>();
     }
 }

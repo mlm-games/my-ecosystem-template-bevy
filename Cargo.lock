@@ -4934,7 +4934,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3194269f7697a676e6b6d93b3a8c9558727ce8f2425c6fdd01b6e364fdbbdb2e"
 dependencies = [
  "bytemuck",
- "glam 0.33.2",
+ "glam 0.32.1",
  "half",
  "log",
  "rdst",
@@ -5604,7 +5604,7 @@ dependencies = [
 [[package]]
 name = "repose-bevy"
 version = "0.2.0"
-source = "git+https://github.com/mlm-games/repose-bevy#1d2d67f7fcfb69dc141fac185ec7d1512a633fff"
+source = "git+https://github.com/mlm-games/repose-bevy#773c1a8d06145c1634954c4db8895bc7ad8639e0"
 dependencies = [
  "anyhow",
  "bevy 0.20.0-dev",
