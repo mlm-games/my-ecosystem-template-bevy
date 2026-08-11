@@ -71,10 +71,10 @@ repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", default-featur
     "shared-device",
 ] }
 wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "0.25"
-repose-ui = "0.25"
-repose-material = "0.25"
-repose-render-wgpu = "0.25"
+repose-core = "0.27"
+repose-ui = "0.27"
+repose-material = "0.27"
+repose-render-wgpu = "0.27"
 game-utils = { git = "https://github.com/mlm-games/game-utils" }
 game-utils-bevy = { git = "https://github.com/mlm-games/game-utils" }
 rand = "0.10"
