@@ -409,9 +409,6 @@ fn handle_pause_input(
     }
 }
 
-fn sync_virtual_time_with_pause(
-    paused: Res<Paused>,
-    mut ctrl: ResMut<TimeScaleControl>,
-) {
+fn sync_virtual_time_with_pause(paused: Res<Paused>, mut ctrl: ResMut<TimeScaleControl>) {
     ctrl.paused = paused.0;
 }

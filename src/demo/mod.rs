@@ -229,7 +229,11 @@ fn spawn_enemies(mut commands: Commands, time: Res<Time>, mut timer: Local<f32>)
     Juice::pop_in(&mut commands, e, 0.25);
 }
 
-fn move_enemies(time: Res<Time>, mut commands: Commands, mut q: Query<(Entity, &Enemy, &mut Transform)>) {
+fn move_enemies(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut q: Query<(Entity, &Enemy, &mut Transform)>,
+) {
     for (e, en, mut tf) in &mut q {
         tf.translation.y -= en.speed * time.delta_secs();
         if tf.translation.y < -400.0 {
