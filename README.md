@@ -6,10 +6,10 @@ A WIP Bevy 2D game template with ecosystem plugins ported from [my-ecosystem-tem
 
 - **Game Feel** - recoil, knockback, slow-motion, rumble (gamepad)
 - **Screen Effects** - trauma shake, freeze frame, flash white, chromatic aberration pulse + decay
-- **Transitions** - fade to black, circle wipe scene transitions with input blocking
-- **Audio** - channel-based SFX/Music/UI buses with independent volume control via `AudioSink`, pitch variation (uses Bevy built-in audio, no external dep)
+- **Transitions** - fade to black, circle wipe scene transitions with input edge blocking
+- **Audio** - channel-based SFX/Music/UI buses with independent volume control (`BaseVolume` × bus), pitch variation, pooled SFX (uses Bevy built-in audio, no external dep)
 - **Localization** - Fluent-based i18n with 7 bundled locales (en, es, fr, de, ja, zh, pt), language switcher in settings, `LocaleResources` resource
-- **Save System** - persistent RON save + backup via `directories`
+- **Save System** - persistent RON save with atomic writes + version migration via `directories`
 - **Object Pooling** - generic entity pool with acquire/release
 - **Juice** - pop-in, squash & stretch, bounce scale, shake, particles with gravity/fade
 - **VFX** - damage numbers, particle bursts, trail emitters
@@ -40,23 +40,31 @@ cargo run --features dev
 
 ## Structure
 
+The game-feel ecosystem (audio, transitions, juice, VFX, save, i18n, pooling, game feel)
+lives in the **[game-utils](https://github.com/mlm-games/game-utils)** workspace, split into:
+
+- `crates/game-utils` - Bevy-agnostic core (save manager, i18n, math, stats, achievements)
+- `crates/game-utils-bevy/src` - Bevy plugins:
+  - `audio.rs` - channel-based audio buses (SfxChannel/MusicChannel/UiChannel)
+  - `center_pivot.rs` - sprite origin centering
+  - `game_feel.rs` - recoil, knockback, slow-motion, gamepad rumble
+  - `i18n.rs` - Fluent-based localization (7 locales, language switcher)
+  - `juice.rs` - pop-in, squash/stretch, bounce, shake, particles
+  - `pooling.rs` - generic entity pooling
+  - `save.rs` - RON save/load with atomic writes + version migration
+  - `screen_effects.rs` - trauma, freeze frame, flash white, chromatic aberration
+  - `time_scale.rs` - single owner of virtual-time speed/pause
+  - `transitions.rs` - fade/circle wipe with input edge blocking
+  - `ui_effects.rs` - hover scale, typewriter, number counter
+  - `vfx.rs` - damage numbers, particle bursts, trail emitters
+
+This template repo holds only the app layer:
+
 ```
 src/
 ├── main.rs              # Entry point
 ├── app.rs               # AppPlugin, states, system sets
-├── ecosystem/           # Game feel, transitions, audio, save, i18n, vfx, etc.
-│   ├── audio.rs         # Channel-based audio buses (SfxChannel/MusicChannel/UiChannel)
-│   ├── center_pivot.rs  # Sprite origin centering
-│   ├── game_feel.rs     # Recoil, knockback, slow-motion, gamepad rumble
-│   ├── i18n.rs          # Fluent-based localization (7 locales, language switcher)
-│   ├── juice.rs         # Pop-in, squash/stretch, bounce, shake, particles
-│   ├── math_utils.rs    # smooth_damp, approach, wave (f32/Vec2/Vec3)
-│   ├── pooling.rs       # Generic entity pooling
-│   ├── save.rs          # RON save/load with backup
-│   ├── screen_effects.rs# Trauma, freeze frame, flash white, chromatic aberration
-│   ├── transitions.rs   # Fade/circle wipe with input blocking
-│   ├── ui_effects.rs    # Hover scale, typewriter, number counter
-│   └── vfx.rs           # Damage numbers, particle bursts, trail emitters
+├── save.rs              # SaveData type (persisted via game-utils)
 ├── screens/             # Splash, loading, title
 ├── menus/               # Main, pause, settings, credits (localized)
 ├── theme/               # Theme resource

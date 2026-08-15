@@ -10,7 +10,6 @@ use game_utils_bevy::save::SaveManager;
 use game_utils_bevy::screen_effects::{ChromaticAberration, ScreenEffects, Trauma};
 use game_utils_bevy::transitions::Transition;
 use game_utils_bevy::vfx::VfxSpawner;
-
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum PowerupKind {
     Chromatic,
@@ -24,6 +23,11 @@ struct PowerupDrop {
 
 #[derive(Resource, Default)]
 pub struct Score(pub u32);
+
+/// Set when in-memory save data diverges from disk; a throttled system flushes it so
+/// the high score isn't written on every kill.
+#[derive(Resource, Default)]
+pub struct SaveDirty(pub bool);
 
 #[derive(Component)]
 struct Player {
@@ -52,6 +56,7 @@ pub struct DemoPlugin;
 impl Plugin for DemoPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>()
+            .init_resource::<SaveDirty>()
             .insert_resource(PowerupActive(Timer::new(
                 core::time::Duration::ZERO,
                 TimerMode::Once,
@@ -70,11 +75,13 @@ impl Plugin for DemoPlugin {
                     move_powerups,
                     collect_powerups,
                     tick_powerup,
+                    flush_dirty_save,
                 )
                     .run_if(in_state(AppState::InGame))
                     .run_if(|p: Res<Paused>| !p.0)
                     .run_if(|t: Res<Transition<AppState>>| !t.block_input),
-            );
+            )
+            .add_systems(OnExit(AppState::InGame), flush_dirty_save_once);
     }
 }
 
@@ -102,8 +109,13 @@ fn init_powerup(mut powerup: ResMut<PowerupActive>) {
     powerup.0.finish();
 }
 
-fn cleanup_demo(mut commands: Commands, q: Query<Entity, With<DemoCleanup>>) {
-    for e in &q {
+fn cleanup_demo(
+    mut commands: Commands,
+    q: Query<Entity, With<DemoCleanup>>,
+    numbers: Query<Entity, With<game_utils_bevy::vfx::DamageNumber>>,
+    particles: Query<Entity, With<game_utils_bevy::juice::Particle>>,
+) {
+    for e in q.iter().chain(numbers.iter()).chain(particles.iter()) {
         commands.entity(e).despawn();
     }
 }
@@ -217,9 +229,12 @@ fn spawn_enemies(mut commands: Commands, time: Res<Time>, mut timer: Local<f32>)
     Juice::pop_in(&mut commands, e, 0.25);
 }
 
-fn move_enemies(time: Res<Time>, mut q: Query<(&Enemy, &mut Transform)>) {
-    for (en, mut tf) in &mut q {
+fn move_enemies(time: Res<Time>, mut commands: Commands, mut q: Query<(Entity, &Enemy, &mut Transform)>) {
+    for (e, en, mut tf) in &mut q {
         tf.translation.y -= en.speed * time.delta_secs();
+        if tf.translation.y < -400.0 {
+            commands.entity(e).despawn();
+        }
     }
 }
 
@@ -251,7 +266,7 @@ fn bullet_enemy_collision(
     mut score: ResMut<Score>,
     mut trauma: ResMut<Trauma>,
     mut save: ResMut<SaveData>,
-    manager: Res<SaveManager>,
+    mut dirty: ResMut<SaveDirty>,
     bullets: Query<(Entity, &Transform), With<Bullet>>,
     enemies: Query<(Entity, &Transform), With<Enemy>>,
     gamepads: Query<(Entity, &Gamepad)>,
@@ -284,7 +299,7 @@ fn bullet_enemy_collision(
                 }
                 if score.0 > save.high_score {
                     save.high_score = score.0;
-                    let _ = manager.save(&*save);
+                    dirty.0 = true;
                 }
             }
         }
@@ -327,5 +342,32 @@ fn collect_powerups(
                 powerup_active.0 = Timer::from_seconds(5.0, TimerMode::Once);
             }
         }
+    }
+}
+
+/// Throttled flush of the dirty high score so disk writes happen at most once per ~5s
+/// of active play instead of on every kill.
+fn flush_dirty_save(
+    mut accumulator: Local<f32>,
+    time: Res<Time>,
+    dirty: Res<SaveDirty>,
+    save: Res<SaveData>,
+    manager: Res<SaveManager>,
+) {
+    if !dirty.0 {
+        return;
+    }
+    *accumulator += time.delta_secs();
+    if *accumulator >= 5.0 {
+        *accumulator = 0.0;
+        let _ = manager.save(&*save);
+    }
+}
+
+/// Ensure a pending dirty save lands when leaving the demo, even if the throttle timer
+/// hadn't fired yet.
+fn flush_dirty_save_once(dirty: Res<SaveDirty>, save: Res<SaveData>, manager: Res<SaveManager>) {
+    if dirty.0 {
+        let _ = manager.save(&*save);
     }
 }

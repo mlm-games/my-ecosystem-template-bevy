@@ -19,7 +19,18 @@ impl Plugin for ScreensPlugin {
             },)
                 .chain(),
         )
-        .add_systems(Update, (tick_splash, tick_loading));
+        .add_systems(Update, (tick_splash, tick_loading))
+        .add_systems(
+            OnExit(AppState::Splash),
+            |mut c: Commands| c.remove_resource::<SplashTimer>(),
+        )
+        .add_systems(
+            OnExit(AppState::Loading),
+            |mut c: Commands| {
+                c.remove_resource::<LoadingTimer>();
+                c.remove_resource::<AssetsLoading>();
+            },
+        );
     }
 }
 

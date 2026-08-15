@@ -20,6 +20,7 @@ use game_utils_bevy::{
     post_process::{ScreenEffectSettings, sync_post_process_settings},
     save::{SaveManager, SavePlugin},
     screen_effects::CameraBase,
+    time_scale::TimeScaleControl,
     transitions::Transition,
 };
 
@@ -258,7 +259,6 @@ fn tick_pending_unpause(
     real: Res<Time<Real>>,
     mut pending: ResMut<PendingUnpause>,
     mut paused: ResMut<Paused>,
-    mut virtual_time: ResMut<Time<Virtual>>,
 ) {
     let Some(timer) = pending.0.as_mut() else {
         return;
@@ -266,7 +266,6 @@ fn tick_pending_unpause(
     if timer.tick(real.delta()).just_finished() {
         pending.0 = None;
         paused.0 = false;
-        virtual_time.unpause();
     }
 }
 
@@ -284,7 +283,6 @@ fn process_ui_actions(
     mut exit: MessageWriter<AppExit>,
     mut transition: ResMut<Transition<AppState>>,
     manager: Res<SaveManager>,
-    mut virtual_time: ResMut<Time<Virtual>>,
     mut pending_unpause: ResMut<PendingUnpause>,
     mut locale: ResMut<LocaleResources>,
 ) {
@@ -330,7 +328,6 @@ fn process_ui_actions(
                 paused.0 = false;
                 *overlay = OverlayMenu::None;
                 pending_unpause.0 = None;
-                virtual_time.unpause();
                 transition.begin_to_state(AppState::Title);
             }
             UiAction::QuitApp => {
@@ -379,7 +376,6 @@ fn handle_pause_input(
     state: Res<State<AppState>>,
     mut paused: ResMut<Paused>,
     mut overlay: ResMut<OverlayMenu>,
-    mut virtual_time: ResMut<Time<Virtual>>,
     mut pending_unpause: ResMut<PendingUnpause>,
     transition: Res<Transition<AppState>>,
 ) {
@@ -396,7 +392,6 @@ fn handle_pause_input(
         OverlayMenu::None if !paused.0 => {
             paused.0 = true;
             *overlay = OverlayMenu::Pause;
-            virtual_time.pause();
             pending_unpause.0 = None;
         }
         OverlayMenu::Pause => {
@@ -414,12 +409,9 @@ fn handle_pause_input(
     }
 }
 
-fn sync_virtual_time_with_pause(paused: Res<Paused>, mut virtual_time: ResMut<Time<Virtual>>) {
-    if paused.0 {
-        if !virtual_time.is_paused() {
-            virtual_time.pause();
-        }
-    } else if virtual_time.is_paused() {
-        virtual_time.unpause();
-    }
+fn sync_virtual_time_with_pause(
+    paused: Res<Paused>,
+    mut ctrl: ResMut<TimeScaleControl>,
+) {
+    ctrl.paused = paused.0;
 }
