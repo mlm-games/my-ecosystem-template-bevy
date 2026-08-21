@@ -28,7 +28,7 @@ A WIP Bevy 2D game template with ecosystem plugins ported from [my-ecosystem-tem
 cargo run
 ```
 
-With physics (Avian2d, will be switched to rapier soon):
+With physics (bevy_rapier2d):
 ```bash
 cargo run --features physics
 ```
@@ -82,7 +82,7 @@ src/
 | `fluent-bundle` + `unic-langid` | Localization (Fluent) |
 | `serde` + `ron` + `directories` | Save system |
 | `rand` | Random variation (audio pitch, VFX) |
-| `avian2d` (optional) | Physics |
+| `bevy_rapier2d` (optional) | Physics |
 
 ## License
 
