@@ -1,6 +1,6 @@
 [package]
 name = "my-ecosystem-bevy"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 license = "GPL-3.0"
 description = "Clone of my Godot template for bevy (port of my-ecosystem-template) with Repose UI"
@@ -71,10 +71,10 @@ repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", default-featur
     "shared-device",
 ] }
 wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "0.27"
-repose-ui = "0.27"
-repose-material = "0.27"
-repose-render-wgpu = "0.27"
+repose-core = "0.28"
+repose-ui = "0.28"
+repose-material = "0.28"
+repose-render-wgpu = "0.28"
 game-utils = { git = "https://github.com/mlm-games/game-utils" }
 game-utils-bevy = { git = "https://github.com/mlm-games/game-utils" }
 rand = "0.10"
