@@ -412,12 +412,10 @@ fn handle_pause_input(
 fn sync_virtual_time_with_pause(
     paused: Res<Paused>,
     mut ctrl: ResMut<TimeScaleControl>,
-    #[cfg(feature = "physics")] mut rapier_config: Query<
-        &mut bevy_rapier2d::plugin::RapierConfiguration,
-    >,
+    // PHYSICS
+    mut rapier_config: Query<&mut bevy_rapier2d::plugin::RapierConfiguration>,
 ) {
     ctrl.paused = paused.0;
-    #[cfg(feature = "physics")]
     for mut config in &mut rapier_config {
         config.physics_pipeline_active = !paused.0;
     }

@@ -36,7 +36,7 @@ pub fn run() {
             .set(ImagePlugin::default_nearest()),
     );
 
-    #[cfg(feature = "physics")]
+    // PHYSICS
     {
         use bevy_rapier2d::prelude::*;
         let mut init = RapierContextInitialization::default_with_length_unit(20.0);

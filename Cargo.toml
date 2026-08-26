@@ -22,7 +22,6 @@ path = "src/main.rs"
 default = ["dev_native"]
 dev = []
 dev_native = ["dev"]
-physics = ["dep:bevy_rapier2d"]
 # Big-game optional crates (check note below)
 # Keep commented until compatible to avoid breakage.
 # input_manager = ["dep:leafwing-input-manager"]
@@ -79,7 +78,7 @@ game-utils = { git = "https://github.com/mlm-games/game-utils" }
 game-utils-bevy = { git = "https://github.com/mlm-games/game-utils" }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
-bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", optional = true, default-features = false, features = [
+bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", default-features = false, features = [
     "dim2",
 ] }
 # Optional big-game crates (pull in bevy-0.19)

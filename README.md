@@ -28,15 +28,14 @@ A WIP Bevy 2D game template with ecosystem plugins ported from [my-ecosystem-tem
 cargo run
 ```
 
-With physics (bevy_rapier2d):
-```bash
-cargo run --features physics
-```
-
 Dev build with hot-reload:
 ```bash
 cargo run --features dev
 ```
+
+> To strip physics out of the template:
+> delete `bevy_rapier2d` from `[dependencies]` in `Cargo.toml` and remove/comment
+> the `// PHYSICS` blocks in `src/lib.rs` and `src/app.rs`.
 
 ## Structure
 
@@ -82,7 +81,7 @@ src/
 | `fluent-bundle` + `unic-langid` | Localization (Fluent) |
 | `serde` + `ron` + `directories` | Save system |
 | `rand` | Random variation (audio pitch, VFX) |
-| `bevy_rapier2d` (optional) | Physics |
+| `bevy_rapier2d` | Physics |
 
 ## License
 
