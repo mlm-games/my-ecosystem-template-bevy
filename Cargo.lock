@@ -2392,9 +2392,9 @@ dependencies = [
 
 [[package]]
 name = "find-msvc-tools"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d45db016d36b838f563236e9193d0ee6ce38f3f68b6c94e914b4929c96bbb890"
+checksum = "3e0f1c7c3a72c66fd80abe965175f7523475c0489a87d3ff9d6e8c87d87a9d2d"
 
 [[package]]
 name = "fixedbitset"
@@ -2653,7 +2653,7 @@ dependencies = [
 [[package]]
 name = "game-utils"
 version = "0.1.2"
-source = "git+https://github.com/mlm-games/game-utils#f3a45707037959f2ea7db018558694458f6b2b38"
+source = "git+https://github.com/mlm-games/game-utils#334c1ab2ccd89d7ffd45bfd646a39d4525b15c2e"
 dependencies = [
  "directories",
  "fluent-bundle",
@@ -2668,17 +2668,19 @@ dependencies = [
  "unic-langid",
  "wasm-bindgen",
  "web-sys",
+ "web-time",
 ]
 
 [[package]]
 name = "game-utils-bevy"
 version = "0.1.2"
-source = "git+https://github.com/mlm-games/game-utils#f3a45707037959f2ea7db018558694458f6b2b38"
+source = "git+https://github.com/mlm-games/game-utils#334c1ab2ccd89d7ffd45bfd646a39d4525b15c2e"
 dependencies = [
  "bevy",
  "game-utils",
  "rand",
  "serde",
+ "web-time",
 ]
 
 [[package]]
@@ -4129,7 +4131,7 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 [[package]]
 name = "opfs"
 version = "0.2.0"
-source = "git+https://github.com/mlm-games/opfs#4ac1e2ce7b62a3bcd12febba86f7f487217c37bb"
+source = "git+https://github.com/mlm-games/opfs#4fca9462957c7ba079d18e876166f82e53e1d474"
 dependencies = [
  "dirs",
  "futures",
@@ -4139,6 +4141,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+ "web-time",
 ]
 
 [[package]]
