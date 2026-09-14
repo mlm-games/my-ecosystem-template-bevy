@@ -66,16 +66,17 @@ bevy = { git = "https://github.com/bevyengine/bevy", rev = "fb89a8649d9b359e53ff
     "webgl2",
     "android-native-activity",
 ] }
-repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", default-features = false, features = [
+repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", rev = "222dc510260f64684414c4a9b2d40c7de6998f04", default-features = false, features = [
     "shared-device",
 ] }
 wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "0.28"
-repose-ui = "0.28"
-repose-material = "0.28"
-repose-render-wgpu = "0.28"
-game-utils = { git = "https://github.com/mlm-games/game-utils" }
-game-utils-bevy = { git = "https://github.com/mlm-games/game-utils" }
+repose-core = "=0.28.17"
+repose-ui = "=0.28.17"
+repose-app = "=0.28.17"
+repose-material = "=0.28.17"
+repose-render-wgpu = "=0.28.17"
+game-utils = { git = "https://github.com/mlm-games/game-utils", rev = "334c1ab2ccd89d7ffd45bfd646a39d4525b15c2e" }
+game-utils-bevy = { git = "https://github.com/mlm-games/game-utils", rev = "334c1ab2ccd89d7ffd45bfd646a39d4525b15c2e" }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
 bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", default-features = false, features = [
