@@ -32,7 +32,7 @@ dev_native = ["dev"]
 # kira_audio = ["dep:bevy_kira_audio"]
 
 [dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy", rev = "fb89a8649d9b359e53ffb6e5492ebb7c059ac8af", default-features = false, features = [
+bevy = { version = "0.20", default-features = false, features = [
     "bevy_asset",
     "bevy_audio",
     "bevy_color",
@@ -66,17 +66,17 @@ bevy = { git = "https://github.com/bevyengine/bevy", rev = "fb89a8649d9b359e53ff
     "webgpu",
     "android-native-activity",
 ] }
-repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", rev = "7ac0e39940fd46f0f0ec099f38beaa8cf7e03395", default-features = false, features = [
+repose-bevy = { version = "0.2.1", default-features = false, features = [
     "shared-device",
 ] }
 wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "=0.28.20"
-repose-ui = "=0.28.20"
-repose-app = "=0.28.20"
-repose-material = "=0.28.20"
-repose-render-wgpu = "=0.28.20"
-game-utils = { git = "https://github.com/mlm-games/game-utils", rev = "3b097868f46243e6a806fffebca288b934fe22d0" }
-game-utils-bevy = { git = "https://github.com/mlm-games/game-utils", rev = "3b097868f46243e6a806fffebca288b934fe22d0", features = ["render"] }
+repose-core = "=0.29.0"
+repose-ui = "=0.29.0"
+repose-app = "=0.29.0"
+repose-material = "=0.29.0"
+repose-render-wgpu = "=0.29.0"
+game-utils = { version = "0.4" }
+game-utils-bevy = { version = "0.4.0", features = ["render"] }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
 bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", default-features = false, features = [
