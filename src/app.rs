@@ -150,7 +150,7 @@ impl Plugin for AppPlugin {
                     let acts = actions_ui.clone();
                     let overlay_rc = remember(OverlayHandle::new);
                     let overlay = (*overlay_rc).clone();
-                    let root = menus::compose_root(overlay.clone(), st, acts);
+                    let root = menus::compose_root(st, acts);
                     overlay.host(Modifier::new().fill_max_size(), root)
                 },
             ))

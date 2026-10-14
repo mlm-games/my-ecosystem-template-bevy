@@ -66,15 +66,15 @@ bevy = { version = "0.20", default-features = false, features = [
     "webgpu",
     "android-native-activity",
 ] }
-repose-bevy = { version = "0.2.1", default-features = false, features = [
+repose-bevy = { version = "0.3", default-features = false, features = [
     "shared-device",
 ] }
 wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "=0.29.0"
-repose-ui = "=0.29.0"
-repose-app = "=0.29.0"
-repose-material = "=0.29.0"
-repose-render-wgpu = "=0.29.0"
+repose-core = "=0.31.21"
+repose-ui = "=0.31.21"
+repose-app = "=0.31.21"
+repose-material = "=0.31.21"
+repose-render-wgpu = "=0.31.21"
 game-utils = { version = "0.4" }
 game-utils-bevy = { version = "0.4.0", features = ["render"] }
 rand = "0.10"

@@ -16,7 +16,6 @@ use repose_material::material3::{
 use repose_ui::anim_ext::{
     AnimatedVisibility, AnimatedVisibilityConfig, EnterTransition, ExitTransition,
 };
-use repose_ui::overlay::OverlayHandle;
 use repose_ui::{Column, Row, Text as RText, TextStyle, ViewExt, ZStack};
 
 use crate::app::{AppState, OverlayMenu, SharedUi};
@@ -52,7 +51,7 @@ pub struct UiBridge {
 }
 
 fn spacer(h: f32) -> View {
-    Column(Modifier::new().height(h).width(1.0))
+    Column(Modifier::new().height(h.into()).width(1.0.into()))
 }
 
 fn popup_anim_config(key: &str) -> AnimatedVisibilityConfig {
@@ -64,13 +63,9 @@ fn popup_anim_config(key: &str) -> AnimatedVisibilityConfig {
     }
 }
 
-pub fn compose_root(
-    overlay: OverlayHandle,
-    st: SharedUi,
-    actions: Arc<Mutex<Vec<UiAction>>>,
-) -> View {
+pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let root = ZStack(Modifier::new().fill_max_size());
-    let settings_view = settings_ui(overlay, &st, actions.clone());
+    let settings_view = settings_ui(&st, actions.clone());
 
     let content = match st.phase {
         AppState::Splash => splash_ui(),
@@ -140,7 +135,7 @@ fn splash_ui() -> View {
             .align_items(AlignItems::CENTER)
             .background(col(8, 8, 12)),
     )
-    .child(RText("My Ecosystem").size(48.0).color(RColor::WHITE))
+    .child(RText("My Ecosystem").size(48.0.into()).color(RColor::WHITE))
 }
 
 fn loading_ui(st: &SharedUi) -> View {
@@ -152,28 +147,28 @@ fn loading_ui(st: &SharedUi) -> View {
             .align_items(AlignItems::CENTER)
             .background(col(8, 8, 12)),
     )
-    .child(RText("Loading...").size(32.0).color(RColor::WHITE))
+    .child(RText("Loading...").size(32.0.into()).color(RColor::WHITE))
     .child(spacer(16.0))
     .child(
         RText(format!("{:.0}%", pct * 100.0))
-            .size(18.0)
+            .size(18.0.into())
             .color(RColor::WHITE),
     )
     .child(spacer(12.0))
     .child(
         Column(
             Modifier::new()
-                .width(320.0)
-                .height(12.0)
+                .width(320.0.into())
+                .height(12.0.into())
                 .background(col(30, 30, 38))
-                .clip_rounded(6.0),
+                .clip_rounded(6.0.into()),
         )
         .child(Column(
             Modifier::new()
-                .width((320.0 * pct).max(1.0))
-                .height(12.0)
+                .width(((320.0 * pct).max(1.0)).into())
+                .height(12.0.into())
                 .background(col(96, 165, 250))
-                .clip_rounded(6.0)
+                .clip_rounded(6.0.into())
                 .align_self(AlignSelf::FLEX_START),
         )),
     )
@@ -195,7 +190,7 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     )
     .child((
         RText(t(tr, "app-title", "My Ecosystem Bevy"))
-            .size(56.0)
+            .size(56.0.into())
             .color(RColor::WHITE),
         spacer(24.0),
         mk_button(
@@ -239,15 +234,15 @@ fn pause_panel(
 ) -> View {
     Column(
         Modifier::new()
-            .width(320.0)
-            .padding(24.0)
+            .width(320.0.into())
+            .padding(24.0.into())
             .background(col(20, 20, 28))
-            .clip_rounded(12.0)
+            .clip_rounded(12.0.into())
             .align_items(AlignItems::CENTER),
     )
     .child((
         RText(t(tr, "paused", "Paused"))
-            .size(36.0)
+            .size(36.0.into())
             .color(RColor::WHITE),
         spacer(16.0),
         mk_button(&t(tr, "resume", "Resume"), col(60, 140, 90), move || {
@@ -264,7 +259,7 @@ fn pause_panel(
     ))
 }
 
-fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+fn settings_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let a_m_down = actions.clone();
     let a_m_up = actions.clone();
     let a_s_down = actions.clone();
@@ -279,7 +274,6 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
     let tr = &st.translations;
     let lang = &st.language;
     let langs = &st.available_languages;
-    let overlay_clone = overlay.clone();
     let actions_clone = actions.clone();
 
     let menu_state: Rc<MenuState> = remember(MenuState::new);
@@ -300,35 +294,34 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
     let menu_trigger = menu_state.clone();
     let lang_label = st.language.clone();
     let trigger = FilledTonalButton(
-        Modifier::new().width(100.0).height(40.0),
+        Modifier::new().width(100.0.into()).height(40.0.into()),
         move || menu_trigger.open(),
         ButtonConfig::default(),
-        move || RText(lang_label.clone()).size(20.0),
+        move || RText(lang_label.clone()).size(20.0.into()),
     );
 
     let lang_dropdown = DropdownMenu(
         menu_state,
-        overlay_clone,
         Modifier::new(),
         trigger,
         lang_items,
         DropdownMenuConfig {
-            min_width: 100.0,
+            min_width: 100.0.into(),
             ..Default::default()
         },
     );
 
     let inner = Column(
         Modifier::new()
-            .width(360.0)
-            .padding(24.0)
+            .width(360.0.into())
+            .padding(24.0.into())
             .background(col(20, 20, 28))
-            .clip_rounded(12.0)
+            .clip_rounded(12.0.into())
             .align_items(AlignItems::CENTER),
     )
     .child(
         RText(t(tr, "settings", "Settings"))
-            .size(36.0)
+            .size(36.0.into())
             .color(RColor::WHITE),
     )
     .child(spacer(12.0))
@@ -338,10 +331,10 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
             t(tr, "master-volume", "Master"),
             master * 100.0
         ))
-        .size(18.0)
+        .size(18.0.into())
         .color(RColor::WHITE),
     )
-    .child(Row(Modifier::new().gap(8.0)).child((
+    .child(Row(Modifier::new().gap(8.0.into())).child((
         mk_button_sm("-", move || {
             push(&a_m_down, UiAction::SetMasterVol(master - 0.1))
         }),
@@ -356,10 +349,10 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
             t(tr, "sfx-volume", "SFX"),
             sfx * 100.0
         ))
-        .size(18.0)
+        .size(18.0.into())
         .color(RColor::WHITE),
     )
-    .child(Row(Modifier::new().gap(8.0)).child((
+    .child(Row(Modifier::new().gap(8.0.into())).child((
         mk_button_sm("-", move || push(&a_s_down, UiAction::SetSfxVol(sfx - 0.1))),
         mk_button_sm("+", move || push(&a_s_up, UiAction::SetSfxVol(sfx + 0.1))),
     )))
@@ -370,10 +363,10 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
             t(tr, "music-volume", "Music"),
             music * 100.0
         ))
-        .size(18.0)
+        .size(18.0.into())
         .color(RColor::WHITE),
     )
-    .child(Row(Modifier::new().gap(8.0)).child((
+    .child(Row(Modifier::new().gap(8.0.into())).child((
         mk_button_sm("-", move || {
             push(&a_mu_down, UiAction::SetMusicVol(music - 0.1))
         }),
@@ -384,10 +377,10 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
     .child(spacer(8.0))
     .child(
         RText(format!("{}:", t(tr, "language", "Language")))
-            .size(18.0)
+            .size(18.0.into())
             .color(RColor::WHITE),
     )
-    .child(Row(Modifier::new().gap(6.0)).child(lang_dropdown))
+    .child(Row(Modifier::new().gap(6.0.into())).child(lang_dropdown))
     .child(spacer(16.0))
     .child(mk_button(
         &t(tr, "save", "Save"),
@@ -415,25 +408,25 @@ fn credits_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let tr = &st.translations;
     let inner = Column(
         Modifier::new()
-            .width(400.0)
-            .padding(24.0)
+            .width(400.0.into())
+            .padding(24.0.into())
             .background(col(20, 20, 28))
-            .clip_rounded(12.0)
+            .clip_rounded(12.0.into())
             .align_items(AlignItems::CENTER),
     )
     .child((
         RText(t(tr, "credits", "Credits"))
-            .size(36.0)
+            .size(36.0.into())
             .color(RColor::WHITE),
         spacer(12.0),
         RText("Original Godot template: mlm-games")
-            .size(16.0)
+            .size(16.0.into())
             .color(RColor::WHITE),
         RText("Bevy + Repose port: mlm-games")
-            .size(16.0)
+            .size(16.0.into())
             .color(RColor::WHITE),
         RText("Engine: Bevy  UI: Repose")
-            .size(16.0)
+            .size(16.0.into())
             .color(RColor::WHITE),
         spacer(16.0),
         mk_button(&t(tr, "back", "Back"), col(70, 70, 90), move || {
@@ -456,42 +449,45 @@ fn ingame_hud(st: &SharedUi) -> View {
     Column(
         Modifier::new()
             .fill_max_size()
-            .padding(16.0)
+            .padding(16.0.into())
             .align_items(AlignItems::FLEX_START)
             .justify_content(JustifyContent::FLEX_START),
     )
     .child((
         RText(format!("{}: {}", t(tr, "score", "Score"), st.score))
-            .size(22.0)
+            .size(22.0.into())
             .color(RColor::WHITE),
         RText(format!("{}: {}", t(tr, "best", "Best"), st.high_score))
-            .size(16.0)
+            .size(16.0.into())
             .color(col(200, 200, 200)),
         RText(t(
             tr,
             "controls-hint",
             "WASD move  Click/Space shoot  Esc pause",
         ))
-        .size(14.0)
+        .size(14.0.into())
         .color(col(180, 180, 180)),
     ))
 }
 
 fn mk_button(label: &str, _bg: RColor, on_click: impl Fn() + 'static) -> View {
     FilledTonalButton(
-        Modifier::new().width(260.0).height(52.0).margin(8.0),
+        Modifier::new()
+            .width(260.0.into())
+            .height(52.0.into())
+            .margin(8.0.into()),
         on_click,
         ButtonConfig::default(),
-        move || RText(label).size(20.0),
+        move || RText(label).size(20.0.into()),
     )
 }
 
 fn mk_button_sm(label: &str, on_click: impl Fn() + 'static) -> View {
     FilledTonalButton(
-        Modifier::new().width(48.0).height(40.0),
+        Modifier::new().width(48.0.into()).height(40.0.into()),
         on_click,
         ButtonConfig::default(),
-        move || RText(label).size(20.0),
+        move || RText(label).size(20.0.into()),
     )
 }
 
