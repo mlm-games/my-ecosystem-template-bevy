@@ -63,6 +63,7 @@ bevy = { version = "0.20", default-features = false, features = [
     "reflect_auto_register",
     "bevy_clipboard",
     "custom_cursor",
+    "webgl2",
     "webgpu",
     "android-native-activity",
 ] }

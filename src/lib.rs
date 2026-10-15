@@ -9,6 +9,10 @@ mod theme;
 
 use app::AppPlugin;
 use bevy::prelude::*;
+use bevy::render::RenderPlugin;
+use bevy::render::settings::RenderCreation;
+#[cfg(target_arch = "wasm32")]
+use bevy::render::settings::{Backends, WgpuSettings};
 use bevy::window::WindowResolution;
 
 #[cfg(target_arch = "wasm32")]
@@ -33,7 +37,8 @@ pub fn run() {
                 primary_window: Some(primary_window),
                 ..default()
             })
-            .set(ImagePlugin::default_nearest()),
+            .set(ImagePlugin::default_nearest())
+            .set(web_render_plugin()),
     );
 
     // PHYSICS
@@ -60,4 +65,20 @@ pub fn run() {
     }
 
     app.add_plugins(AppPlugin).run();
+}
+
+fn web_render_plugin() -> RenderPlugin {
+    #[cfg(target_arch = "wasm32")]
+    let render_creation = RenderCreation::from(WgpuSettings {
+        backends: Some(Backends::all()),
+        ..default()
+    });
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let render_creation = RenderCreation::default();
+
+    RenderPlugin {
+        render_creation,
+        ..default()
+    }
 }
