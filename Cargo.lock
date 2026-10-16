@@ -5045,9 +5045,9 @@ dependencies = [
 
 [[package]]
 name = "repose-bevy"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08e2905eb4055f3c70a96dfa6ee22d0306d12db6c2895d0575048d6a28b5fa88"
+checksum = "6fd92b5aec72fd3c433f6f72077873655b0a60ec64e6c59a4b52ce5f43b8f5a0"
 dependencies = [
  "anyhow",
  "bevy",
