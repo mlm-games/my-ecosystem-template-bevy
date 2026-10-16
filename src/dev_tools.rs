@@ -127,7 +127,7 @@ fn trace_repose_scene(
     }
 
     info!(
-        "repose diag: fb={}x{}..{}x{} fb_churn={} scale={} dt={:.0}..{:.0}ms nodes={} hover={:?} hover_churn={} pos={:.0},{:.0}..{:.0},{:.0} cursor_px100={:?} scene_changed={}/{}",
+        "repose diag[v3]: fb={}x{}..{}x{} fb_churn={} scale={} dt={:.0}..{:.0}ms nodes={} hover={:?} hover_churn={} pos={:.0},{:.0}..{:.0},{:.0} cursor_px100={:?} scene_changed={}/{}",
         acc.fb_min.0,
         acc.fb_min.1,
         acc.fb_max.0,
