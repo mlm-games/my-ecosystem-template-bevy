@@ -77,7 +77,7 @@ repose-app = "=0.31.21"
 repose-material = "=0.31.21"
 repose-render-wgpu = "=0.31.21"
 game-utils = { version = "0.4" }
-game-utils-bevy = { version = "0.4.0", features = ["render"] }
+game-utils-bevy = { version = "0.4.1", features = ["render"] }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
 bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", default-features = false, features = [
