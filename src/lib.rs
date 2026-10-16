@@ -10,9 +10,9 @@ mod theme;
 use app::AppPlugin;
 use bevy::prelude::*;
 use bevy::render::RenderPlugin;
-use bevy::render::settings::{Backends, RenderCreation};
 #[cfg(target_arch = "wasm32")]
 use bevy::render::settings::WgpuSettings;
+use bevy::render::settings::{Backends, RenderCreation};
 use bevy::window::WindowResolution;
 
 #[cfg(target_arch = "wasm32")]

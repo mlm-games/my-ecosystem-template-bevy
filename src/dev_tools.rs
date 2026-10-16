@@ -59,7 +59,10 @@ fn trace_repose_scene(
     let Some(state) = state else {
         return;
     };
-    let scale = windows.single().map(|w| w.resolution.scale_factor()).unwrap_or(1.0);
+    let scale = windows
+        .single()
+        .map(|w| w.resolution.scale_factor())
+        .unwrap_or(1.0);
     let cursor = windows
         .single()
         .ok()
