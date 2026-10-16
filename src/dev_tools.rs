@@ -26,48 +26,88 @@ fn log_state_change(state: Res<State<crate::app::AppState>>) {
     }
 }
 
+/// One-line-per-second trace of everything that could make the whole UI blink:
+/// framebuffer churn (the overlay image is rebuilt whenever the size changes,
+/// and it is rebuilt transparent), node-count churn, elevation, and frame time.
 #[derive(Default)]
 struct TraceAcc {
     frames: u32,
-    changed: u32,
+    fb_changes: u32,
+    node_changes: u32,
+    scene_changes: u32,
     digest: Option<u64>,
-    layers: BTreeSet<(u32, i32, i32)>,
+    last_fb: (u32, u32),
+    last_nodes: usize,
+    fb_min: (u32, u32),
+    fb_max: (u32, u32),
+    nodes_min: usize,
+    nodes_max: usize,
+    elev_min: i32,
+    elev_max: i32,
+    dt_min: f32,
+    dt_max: f32,
     elevation: BTreeSet<i32>,
 }
 
-const TRACE_WINDOW: u32 = 60;
+const TRACE_WINDOW: u32 = 120;
 
-fn trace_repose_scene(state: Option<NonSend<ReposeState>>, mut acc: Local<TraceAcc>) {
+fn trace_repose_scene(
+    time: Res<Time>,
+    state: Option<NonSend<ReposeState>>,
+    mut acc: Local<TraceAcc>,
+) {
     let Some(state) = state else {
         return;
     };
+
+    let dt_ms = time.delta_secs() * 1000.0;
+    acc.dt_min = if acc.frames == 0 {
+        dt_ms
+    } else {
+        acc.dt_min.min(dt_ms)
+    };
+    acc.dt_max = acc.dt_max.max(dt_ms);
+
+    let fb = (state.fb_width, state.fb_height);
+    if acc.frames == 0 {
+        acc.fb_min = fb;
+        acc.fb_max = fb;
+        acc.last_fb = fb;
+        acc.nodes_min = state.scene.nodes.len();
+        acc.nodes_max = acc.nodes_min;
+        acc.last_nodes = acc.nodes_min;
+    } else {
+        acc.fb_min = (acc.fb_min.0.min(fb.0), acc.fb_min.1.min(fb.1));
+        acc.fb_max = (acc.fb_max.0.max(fb.0), acc.fb_max.1.max(fb.1));
+        if fb != acc.last_fb {
+            acc.fb_changes += 1;
+            acc.last_fb = fb;
+        }
+        let nodes = state.scene.nodes.len();
+        acc.nodes_min = acc.nodes_min.min(nodes);
+        acc.nodes_max = acc.nodes_max.max(nodes);
+        if nodes != acc.last_nodes {
+            acc.node_changes += 1;
+            acc.last_nodes = nodes;
+        }
+    }
 
     let mut hasher = DefaultHasher::new();
     for node in &state.scene.nodes {
         std::mem::discriminant(node).hash(&mut hasher);
         match node {
-            SceneNode::BeginLayer {
-                layer_id,
-                blur_radius_x,
-                blur_radius_y,
-                ..
-            } => {
-                layer_id.hash(&mut hasher);
-                acc.layers
-                    .insert((*layer_id, px100(blur_radius_x.0), px100(blur_radius_y.0)));
-            }
-            SceneNode::EndLayer { layer_id } => layer_id.hash(&mut hasher),
-            SceneNode::CompositeShadow {
-                layer_id, blur_px, ..
-            } => {
-                layer_id.hash(&mut hasher);
-                acc.layers.insert((*layer_id, px100(blur_px.0), 0));
-            }
             SceneNode::Shadow { elevation, .. } => {
-                elevation.0.to_bits().hash(&mut hasher);
-                acc.elevation.insert(px100(elevation.0));
+                let e = px100(elevation.0);
+                acc.elevation.insert(e);
+                acc.elev_min = if acc.elevation.len() == 1 {
+                    e
+                } else {
+                    acc.elev_min.min(e)
+                };
+                acc.elev_max = acc.elev_max.max(e);
             }
             SceneNode::Text { text, .. } => text.hash(&mut hasher),
+            SceneNode::BeginLayer { layer_id, .. } => layer_id.hash(&mut hasher),
             _ => {}
         }
     }
@@ -76,25 +116,29 @@ fn trace_repose_scene(state: Option<NonSend<ReposeState>>, mut acc: Local<TraceA
     acc.frames += 1;
     if acc.digest != Some(digest) {
         acc.digest = Some(digest);
-        acc.changed += 1;
+        acc.scene_changes += 1;
     }
 
     if acc.frames < TRACE_WINDOW {
         return;
     }
 
-    if acc.changed > 0 {
-        info!(
-            "repose diag: fb={}x{} nodes={} scene_changed={}/{} layers={:?} elevation={:?}",
-            state.fb_width,
-            state.fb_height,
-            state.scene.nodes.len(),
-            acc.changed,
-            acc.frames,
-            acc.layers,
-            acc.elevation,
-        );
-    }
+    info!(
+        "repose diag: fb={}x{}..{}x{} fb_churn={} dt={:.1}..{:.1}ms nodes={}..{} node_churn={} scene_changed={}/{} elev={:?}",
+        acc.fb_min.0,
+        acc.fb_min.1,
+        acc.fb_max.0,
+        acc.fb_max.1,
+        acc.fb_changes,
+        acc.dt_min,
+        acc.dt_max,
+        acc.nodes_min,
+        acc.nodes_max,
+        acc.node_changes,
+        acc.scene_changes,
+        acc.frames,
+        acc.elevation,
+    );
 
     *acc = TraceAcc::default();
 }
